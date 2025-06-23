@@ -1,27 +1,14 @@
-from fastapi import FastAPI
+import sqlite3
 
-app = FastAPI()
+conn = sqlite3.connect('database.db')
+curs = conn.cursor()
 
-murids = {
-    1: {
-        "nama": "Rapla",
-        "umur": "18",
-        "fakultas": "ipa"
-    }
-}
 
-@app.get("/")
-def index():
-    return{"nama": "first data"}
+curs.execute('SELECT rowid, * FROM mahasiswatb')
+all = curs.fetchall()
+for i in all:
+    print(f"{i}")
 
-@app.get("/get-murid/{murid_id}")
-def get_id(murid_id: int):
-    return murids[murid_id]
 
-@app.get("/murid-nama")
-def get_nama(nama: str):
-    for murid_id in murids:
-        if murids[murid_id]["nama"] == nama:
-            return murids[murid_id]
-        else:
-            return {"Gak ada"}
+conn.commit()
+conn.close()    
