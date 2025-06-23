@@ -140,6 +140,9 @@
       border-radius: 5px;
       margin: 10px 0;
     }
+    #add-button{
+        margin-bottom: 10px;
+    }
   </style>
 </head>
 <body>
@@ -157,7 +160,7 @@
           <div class="dropdown-menu" id="dropdownMenu">
             <div class="dropdown-item" data-value="name">Search by Name</div>
             <div class="dropdown-item" data-value="id">Search by ID</div>
-            <div class="dropdown-item" data-value="nim">Search by NIM</div>
+            <div class="dropdown-item" data-value="fakultas">Search by Fakultas</div>
           </div>
         </div>
         <input type="text" id="searchInput" placeholder="Enter search term..." class="search-input">
@@ -166,8 +169,33 @@
       
       <!-- Load All Data Button -->
       <button class="button" onclick="loadMahasiswa()">Load All Data</button>
+      <!--Add Mahasiswa Button-->
+      <button class="button" id="add-button" onclick="addMahasiswa()">Add Student</button>
     </div>
 
+    <!--Delete-->
+    <button id="delete-button" class="button" onclick="deleteMahasiswa()">Delete Student</button>
+    <input type="text" class="search-input" id="delete-nama-input" placeholder="Student name...">
+    <div id="delete-status"></div>
+
+    <!--Input Fields for Add Mahasiswa-->
+    <div id="input-fields" style="display: none; margin-top: 20px;">
+      <h3>Tambahkan Mahasiswa</h3>
+      <div style="display: flex; flex-direction: column; gap: 10px; max-width: 400px;">
+        <form id="addForm">
+        <input type="text" id="nama-input" placeholder="Nama" class="search-input">
+        <input type="number" id="umur-input" placeholder="Umur" class="search-input">
+        <input type="text" id="fakultas-input" placeholder="Fakultas" class="search-input">
+        <input type="number" step="0.01" id="ipk-input" placeholder="IPK" class="search-input">
+        <select id="di_skors-input" class="search-input">
+          <option value="">Diskors?</option>
+          <option value="true">Ya</option>
+          <option value="false">Tidak</option>
+        </select>
+        <button class="button" type="submit">Submit</button>
+        </form>
+      </div>
+    </div>
     <div id="status"></div>
   </div>
 
@@ -294,16 +322,38 @@
         
         // Debug: log what we actually received
         console.log('Search response:', data);
-        console.log('First item:', data[0]);
+        
+        // Handle both array and object formats
+        let results;
+        if (Array.isArray(data) && data.length > 0) {
+          if (Array.isArray(data[0])) {
+            // Search returns array of arrays - convert to objects
+            results = data.map(row => ({
+              rowid: row[0],
+              nama: row[1], 
+              umur: row[2],
+              fakultas: row[3],
+              ipk: row[4],
+              di_skors: Boolean(row[5])
+            }));
+          } else {
+            // Already objects (from /all endpoint)
+            results = data;
+          }
+        } else if (data.data) {
+          results = data.data;
+        } else {
+          results = [data];
+        }
         
         tbody.innerHTML = '';
         
-        if (data.length === 0) {
+        if (results.length === 0) {
           status.innerText = 'No results found.';
           return;
         }
         
-        data.forEach(m => {
+        results.forEach(m => {
           const row = document.createElement('tr');
           row.innerHTML = `
             <td>${m.rowid}</td>
@@ -316,11 +366,84 @@
           tbody.appendChild(row);
         });
         
-        status.innerText = `Found ${data.length} result(s)`;
+        status.innerText = `Found ${results.length} result(s)`;
       } catch (error) {
         status.innerText = 'Search failed.';
         console.error('Search failed:', error);
       }
+    }
+
+    function addMahasiswa() {
+      const inputFields = document.getElementById('input-fields');
+      
+      // Toggle visibility of input fields
+      if (inputFields.style.display === 'none') {
+        inputFields.style.display = 'block';
+      } else {
+        inputFields.style.display = 'none';
+      }
+
+      //Scripttttttttttttttttttttttttttttttttttttttttt
+       document.querySelector('button[type="submit"]').addEventListener('click', async (e) => {
+        e.preventDefault();
+
+        const formData = new FormData();
+        formData.append("nama", document.getElementById("nama-input").value);
+        formData.append("umur", document.getElementById("umur-input").value);
+        formData.append("fakultas", document.getElementById("fakultas-input").value);
+        formData.append("ipk", document.getElementById("ipk-input").value);
+        formData.append("di_skors", document.getElementById("di_skors-input").value);
+
+        try {
+            const response = await fetch("http://127.0.0.1:8000/add-mahasiswa", {
+            method: "POST",
+            body: formData
+            });
+
+            const result = await response.json();
+            console.log(result); 
+            if (result.mahasiswa && result.mahasiswa.nama) {
+            document.getElementById("status").innerText = `${result.message}: ${result.mahasiswa.nama}`;
+            } else {
+            document.getElementById("status").innerText = `Error: ${JSON.stringify(result.detail)}`;
+            }
+        } catch (err) {
+            console.error(err);
+            document.getElementById("status").innerText = "Error submitting form.";
+        }
+        });
+        
+    }
+    
+    function deleteMahasiswa() {
+        document.getElementById("delete-button").addEventListener("click", async function () {
+        const nama = document.getElementById("delete-nama-input").value;
+        const nama = namaInput.value.trim(); 
+        console.log("Deleting:", nama); 
+         
+        if (!nama) {
+            document.getElementById("delete-status").innerText = "❌ Nama tidak boleh kosong.";
+            return;
+        }
+
+        try {
+            const response = await fetch(`http://127.0.0.1:8000/delete-mahasiswa?nama=${encodeURIComponent(nama)}`, {
+            method: "DELETE"
+            });
+
+            const result = await response.json();
+            console.log(result);
+
+            if (response.ok) {
+            document.getElementById("delete-status").innerText = `✅ Deleted`;
+            } else {
+            document.getElementById("delete-status").innerText = `⚠️ Gagal: ${result.detail || "Unknown error"}`;
+            }
+        } catch (err) {
+            console.error(err);
+            document.getElementById("delete-status").innerText = "❌ Network or server error.";
+        }
+        });
     }
 
     function goBack() {

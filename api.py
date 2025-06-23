@@ -1,8 +1,9 @@
-from fastapi import FastAPI, Depends, HTTPException
+from fastapi import FastAPI, Depends, HTTPException, Form
 from sqlalchemy import Column, Integer, String, Boolean, Float, create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, Session
 from fastapi.middleware.cors import CORSMiddleware
+from pydantic import BaseModel
 import sqlite3
 
 
@@ -79,3 +80,43 @@ async def get_nama(type: str, term: str, db: Session = Depends(get_db)):
     
     results = curs.fetchall()
     return results
+
+@app.post("/add-mahasiswa")
+def add_mahasiswa(db : Session = Depends(get_db),
+    nama: str = Form(...),
+    umur: int = Form(...),
+    fakultas: str = Form(...),
+    ipk: float = Form(...),
+    di_skors: bool = Form(...)
+):
+    mhs = Mahasiswa(
+        nama=nama,
+        umur=umur,
+        fakultas=fakultas,
+        ipk=ipk,
+        di_skors=di_skors
+    )
+    db.add(mhs)
+    db.commit()
+    db.refresh(mhs)
+    db.close()
+    return {
+    "message": "Mahasiswa added",
+    "mahasiswa": {
+        "rowid": mhs.rowid,
+        "nama": mhs.nama,
+        "umur": mhs.umur,
+        "fakultas": mhs.fakultas,
+        "ipk": mhs.ipk,
+        "di_skors": mhs.di_skors
+    }}
+
+@app.delete("/delete-mahasiswa")
+def delete(nama: str, db: Session = Depends(get_db)):
+    mahasiswa = db.query(Mahasiswa).filter(Mahasiswa.nama == nama).first()
+    if not mahasiswa:
+        raise HTTPException(status_code=404, detail="Mahasiswa not found")
+
+    db.delete(mahasiswa)
+    db.commit()
+    return {"message": f"Mahasiswa '{nama}' deleted"}
