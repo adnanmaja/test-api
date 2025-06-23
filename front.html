@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>My App</title>
+</head>
+<body>
+    <div id="mahasiswa-list"></div>
+    <button onclick="loadAllData()">Load Users</button>
+
+    <script>
+        const API_BASE = 'http://localhost:8000';  // Your FastAPI server URL
+
+        async function loadAllData() {
+            const statusDiv = document.getElementById('status');
+            const dataDiv = document.getElementById('data-display');
+            
+            // Show loading message
+            statusDiv.innerHTML = '<div class="loading">Loading data...</div>';
+            dataDiv.innerHTML = '';
+            
+            try {
+                console.log('Fetching data from:', `${API_BASE}/all`);
+                
+                const response = await fetch(`${API_BASE}/all`);
+                console.log('Response status:', response.status);
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const data = await response.json();
+                console.log('Received data:', data);
+                console.log('Data type:', typeof data);
+                console.log('Is array:', Array.isArray(data));
+                
+                // Clear loading message
+                statusDiv.innerHTML = '';
+                
+                // Handle different data structures
+                if (Array.isArray(data)) {
+                    if (data.length === 0) {
+                        dataDiv.innerHTML = '<div class="data-item">No data found in database.</div>';
+                    } else {
+                        displayDataAsArray(data, dataDiv);
+                    }
+                } else if (data && typeof data === 'object') {
+                    // Data might be wrapped in an object
+                    const keys = Object.keys(data);
+                    console.log('Object keys:', keys);
+                    
+                    // Try to find an array in the object
+                    let arrayFound = false;
+                    for (let key of keys) {
+                        if (Array.isArray(data[key])) {
+                            displayDataAsArray(data[key], dataDiv);
+                            arrayFound = true;
+                            break;
+                        }
+                    }
+                    
+                    if (!arrayFound) {
+                        // Just display the raw object
+                        dataDiv.innerHTML = `<div class="raw-data">${JSON.stringify(data, null, 2)}</div>`;
+                    }
+                } else {
+                    dataDiv.innerHTML = `<div class="data-item">Received: ${data}</div>`;
+                }
+                
+            } catch (error) {
+                console.error('Error loading data:', error);
+                statusDiv.innerHTML = `<div class="error">Error: ${error.message}</div>`;
+                
+                // Show some helpful debugging info
+                dataDiv.innerHTML = `
+                    <div class="error">
+                        <strong>Debugging Info:</strong><br>
+                        - Make sure your FastAPI server is running on port 8000<br>
+                        - Check that your /all endpoint exists<br>
+                        - Verify CORS is enabled in your FastAPI app<br>
+                        - Check the browser console for more details
+                    </div>
+                `;
+            }
+        }
+        
+    </script>
+</body>
+</html>

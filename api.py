@@ -1,8 +1,8 @@
-from fastapi import FastAPI, Depends
+from fastapi import FastAPI, Depends, HTTPException
 from sqlalchemy import Column, Integer, String, Boolean, Float, create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, Session
-import sqlite3
+from fastapi.middleware.cors import CORSMiddleware
 
 
 Database_URL = 'sqlite:///./database.db'
@@ -19,8 +19,16 @@ class Mahasiswa(Base):
     ipk = Column(Float)
     di_skors = Column(Boolean)
 
-
 app = FastAPI()
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # In production, specify your frontend URL
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 def get_db():
     db = LocalSession()
     try:
@@ -28,7 +36,28 @@ def get_db():
     finally:
         db.close()
 
-@app.get("/nama")
-def get_all_users(db: Session = Depends(get_db)):
-    mhss = db.query(Mahasiswa).all()
-    return mhss
+@app.get("/all")
+async def get_all_users(db: Session = Depends(get_db)):
+    result = db.query(Mahasiswa).all()
+    if result:
+        return result    
+    else: 
+        raise HTTPException(status_code=404, detail="Gak ada")
+
+@app.get("/search/nama/{nama}")
+def get_nama(nama: str, db: Session = Depends(get_db)):
+    result = db.query(Mahasiswa).filter(Mahasiswa.nama == nama).all()   
+    if result:
+        return result    
+    else: 
+        raise HTTPException(status_code=404, detail="Gak ada")
+
+@app.get("/search/fakultas/{fakultas}")
+def get_nama(fakultas: str, db: Session = Depends(get_db)):
+    print(f"Searching for fakultas: '{fakultas}'")
+    result = db.query(Mahasiswa).filter(Mahasiswa.fakultas == fakultas).all()   
+    if result:
+        return result    
+    else: 
+        raise HTTPException(status_code=404, detail="Gak ada")
+
