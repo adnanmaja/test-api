@@ -18,12 +18,22 @@ class Mahasiswa(Base):
     fakultas = Column(String)
     ipk = Column(Float)
     di_skors = Column(Boolean)
+    
+    def to_dict(self):
+        return {
+            "rowid": self.rowid,
+            "nama": self.nama,
+            "umur": self.umur,
+            "fakultas": self.fakultas,
+            "ipk": self.ipk,
+            "di_skors": self.di_skors
+        }
 
 app = FastAPI()
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # In production, specify your frontend URL
+    allow_origins=["*"],  
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

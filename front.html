@@ -1,88 +1,144 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>My App</title>
-</head>
-<body>
-    <div id="mahasiswa-list"></div>
-    <button onclick="loadAllData()">Load Users</button>
-
-    <script>
-        const API_BASE = 'http://localhost:8000';  // Your FastAPI server URL
-
-        async function loadAllData() {
-            const statusDiv = document.getElementById('status');
-            const dataDiv = document.getElementById('data-display');
-            
-            // Show loading message
-            statusDiv.innerHTML = '<div class="loading">Loading data...</div>';
-            dataDiv.innerHTML = '';
-            
-            try {
-                console.log('Fetching data from:', `${API_BASE}/all`);
-                
-                const response = await fetch(`${API_BASE}/all`);
-                console.log('Response status:', response.status);
-                
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-                
-                const data = await response.json();
-                console.log('Received data:', data);
-                console.log('Data type:', typeof data);
-                console.log('Is array:', Array.isArray(data));
-                
-                // Clear loading message
-                statusDiv.innerHTML = '';
-                
-                // Handle different data structures
-                if (Array.isArray(data)) {
-                    if (data.length === 0) {
-                        dataDiv.innerHTML = '<div class="data-item">No data found in database.</div>';
-                    } else {
-                        displayDataAsArray(data, dataDiv);
-                    }
-                } else if (data && typeof data === 'object') {
-                    // Data might be wrapped in an object
-                    const keys = Object.keys(data);
-                    console.log('Object keys:', keys);
-                    
-                    // Try to find an array in the object
-                    let arrayFound = false;
-                    for (let key of keys) {
-                        if (Array.isArray(data[key])) {
-                            displayDataAsArray(data[key], dataDiv);
-                            arrayFound = true;
-                            break;
-                        }
-                    }
-                    
-                    if (!arrayFound) {
-                        // Just display the raw object
-                        dataDiv.innerHTML = `<div class="raw-data">${JSON.stringify(data, null, 2)}</div>`;
-                    }
-                } else {
-                    dataDiv.innerHTML = `<div class="data-item">Received: ${data}</div>`;
-                }
-                
-            } catch (error) {
-                console.error('Error loading data:', error);
-                statusDiv.innerHTML = `<div class="error">Error: ${error.message}</div>`;
-                
-                // Show some helpful debugging info
-                dataDiv.innerHTML = `
-                    <div class="error">
-                        <strong>Debugging Info:</strong><br>
-                        - Make sure your FastAPI server is running on port 8000<br>
-                        - Check that your /all endpoint exists<br>
-                        - Verify CORS is enabled in your FastAPI app<br>
-                        - Check the browser console for more details
-                    </div>
-                `;
-            }
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Backend try</title>
+  <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
         }
         
-    </script>
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        h2 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 16px;
+        }
+        
+        .button {
+            background: #007bff;
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-bottom: 20px;
+            transition: background 0.3s;
+        }
+
+        #mahasiswa-table {
+        display: none;
+        }
+        
+        .button:hover {
+            background: #0056b3;
+        }
+        
+        .loading {
+            color: #666;
+            font-style: italic;
+        }
+        
+        .error {
+            color: #dc3545;
+            background: #f8d7da;
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+        
+        .data-item {
+            background: #f8f9fa;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 5px;
+            border-left: 4px solid #007bff;
+        }
+        
+        .data-item strong {
+            color: #495057;
+        }
+        
+        .raw-data {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+            font-family: monospace;
+            white-space: pre-wrap;
+            overflow-x: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        
+        <h1>Mahasiswa Tracker</h1>
+        <h2>My first attempt at doing backends</h2>
+        
+        <button class="button" onclick="loadMahasiswa()">Load All Data</button>
+        
+        <div id="status"></div>
+        <div id="data-display"></div>
+        <table border="1" style="margin-top: 10px;">
+        <thead>
+        <tr>
+            <th>Row ID</th>
+            <th>Nama</th>
+            <th>Umur</th>
+            <th>Fakultas</th>
+            <th>IPK</th>
+            <th>Diskors?</th>
+        </tr>
+        </thead>
+        <tbody id="mahasiswa-body"></tbody>
+    </table>
+    </div>
+  
+
+  <script>
+    async function loadMahasiswa() {
+      try {
+        const response = await fetch('http://localhost:8000/all');
+        const data = await response.json();
+
+        const tbody = document.getElementById('mahasiswa-body');
+        tbody.innerHTML = ''; // clear previous rows
+
+        data.forEach(m => {
+          const row = document.createElement('tr');
+          row.innerHTML = `
+            <td>${m.rowid}</td>
+            <td>${m.nama}</td>
+            <td>${m.umur}</td>
+            <td>${m.fakultas}</td>
+            <td>${m.ipk}</td>
+            <td>${m.di_skors ? 'Ya' : 'Tidak'}</td>
+          `;
+          tbody.appendChild(row);
+        });
+        table.style.display = 'table';
+      } catch (error) {
+        console.error('Gagal fetch data:', error);
+      }
+    }
+  </script>
 </body>
 </html>
