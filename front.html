@@ -24,12 +24,14 @@
             color: #333;
             text-align: center;
             margin-bottom: 20px;
+            font-size: 35px;
         }
         h2 {
             color: #333;
             text-align: center;
             margin-bottom: 30px;
             font-size: 16px;
+            font-weight: 100;
         }
         
         .button {
@@ -97,7 +99,7 @@
         
         <div id="status"></div>
         <div id="data-display"></div>
-        <table border="1" style="margin-top: 10px;">
+        <table id="mahasiswa-table" border="1" style="margin-top: 10px;">
         <thead>
         <tr>
             <th>Row ID</th>
@@ -115,6 +117,9 @@
 
   <script>
     async function loadMahasiswa() {
+      const status = document.getElementById('status');
+      const table = document.getElementById('mahasiswa-table');
+      status.innerText = 'Loading...';
       try {
         const response = await fetch('http://localhost:8000/all');
         const data = await response.json();
@@ -135,6 +140,7 @@
           tbody.appendChild(row);
         });
         table.style.display = 'table';
+        status.innerText = '';
       } catch (error) {
         console.error('Gagal fetch data:', error);
       }
