@@ -146,6 +146,29 @@
     .dropdown-item:hover {
         background-color: #f8f9fa;
     }
+    .search-input-container {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 10px;
+        align-items: center;
+        width: 100%;
+        max-width: 400px;
+    }
+
+    .search-input {
+        flex: 1;
+        padding: 12px 15px;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+        font-size: 16px;
+        background-color: #f8f9fa;
+    }
+
+    .search-input:focus {
+        outline: none;
+        border-color: #007bff;
+        box-shadow: 0 0 5px rgba(0,123,255,0.3);
+    }
   </style>
 </head>
 <body>
@@ -155,13 +178,26 @@
     <h1>Mahasiswa Tracker</h1>
     <h2>My first attempt at doing backends</h2>
 
-    <div class="button-container">
-        <button class="button" id="searchBtn">Search By</button>
-        <button class="button" onclick="loadMahasiswa()">Load All Data</button>
-    </div>
+        <div class="button-container">
+            <div class="search-section">
+                <button class="button" id="searchBtn">Search By</button>
+            <div class="dropdown-menu" id="dropdownMenu">
+                <div class="dropdown-item" data-value="name">Search by Name</div>
+                <div class="dropdown-item" data-value="id">Search by ID</div>
+                <div class="dropdown-item" data-value="nim">Search by NIM</div>
+            </div>
+            </div>
 
-    <div id="status"></div>
-  </div>
+            <div class="search-input-container">
+                <input type="text" id="searchInput" placeholder="Enter search term..." class="search-input">
+                <button class="button" onclick="performSearch()">Go</button>
+            </div>
+    
+            <button class="button" onclick="loadMahasiswa()">Load All Data</button>
+        </div>
+
+        <div id="status"></div>
+    </div>
 
   <!-- DATA SCREEN -->
   <div class="container" id="data-screen" style="display: none;">
@@ -181,15 +217,7 @@
       </thead>
       <tbody id="mahasiswa-body"></tbody>
     </table>
-
-    <!-- SEARCH BAR -->
-    <div class="search-section">
-        <div class="dropdown-menu" id="dropdownMenu">
-            <div class="dropdown-item" data-value="name">Search by Name</div>
-            <div class="dropdown-item" data-value="id">Search by ID</div>
-            <div class="dropdown-item" data-value="nim">Search by NIM</div>
-        </div>
-    </div>
+  
 
     <!-- CODE -->
   <script>
@@ -243,7 +271,7 @@
         item.addEventListener('click', function() {
         const selectedValue = this.getAttribute('data-value');
         const selectedText = this.textContent;
-        
+            
         // Update button text to show selection
         searchBtn.textContent = selectedText;
         
@@ -265,6 +293,7 @@
       document.getElementById('data-screen').style.display = 'none';
       document.getElementById('home-screen').style.display = 'block';
     }
+    searchMahasiswa();
   </script>
 </body>
 </html>
