@@ -1,5 +1,5 @@
-## 🛠️ API Try — My First Fullstack CRUD App
-Welcome to API Try, a simple CRUD web app where I experimented with backend development for the first time using FastAPI and SQLAlchemy. What started as a backend learning project turned into a fullstack challenge, where I surprisingly ended up spending way more time on the frontend 😅.
+## 🛠️ Mahasiswa Tracker — My First Fullstack CRUD App
+Welcome to Mahasiswa Tracker, a simple CRUD web app where I experimented with backend development for the first time using FastAPI and SQLAlchemy. What started as a backend learning project turned into a fullstack challenge, where I surprisingly ended up spending way more time on the frontend.
 
 ## 🚀 Features
 - Create, Read, Update, and Delete (CRUD) entries from a local SQLite database
@@ -19,6 +19,7 @@ Welcome to API Try, a simple CRUD web app where I experimented with backend deve
 ## 📸 Screenshots
 - "Homepage"
 ![Frontpage](preview1.png)
+
 - Load All Data
 ![Load All](preview2.png)
 
@@ -27,4 +28,4 @@ This project taught me:
 - The basics of RESTful API design with FastAPI
 - How ORMs like SQLAlchemy work under the hood
 - How to handle dynamic frontend interactions using Fetch API
-- That frontend work can unexpectedly suck you in 😄
+- Frontend is waaay harder than i expect (especially JS)
