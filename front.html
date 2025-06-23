@@ -44,7 +44,6 @@
       cursor: pointer;
       font-size: 16px;
       transition: background 0.3s;
-      width: 115px;
     }
 
     .button:hover {
@@ -158,7 +157,7 @@
           <div class="dropdown-menu" id="dropdownMenu">
             <div class="dropdown-item" data-value="name">Search by Name</div>
             <div class="dropdown-item" data-value="id">Search by ID</div>
-            <div class="dropdown-item" data-value="fakultas">Search by Fakultas</div>
+            <div class="dropdown-item" data-value="nim">Search by NIM</div>
           </div>
         </div>
         <input type="text" id="searchInput" placeholder="Enter search term..." class="search-input">
@@ -241,14 +240,15 @@
         tbody.innerHTML = '';
 
         data.forEach(m => {
+          console.log('Processing row:', m); // Debug each row
           const row = document.createElement('tr');
           row.innerHTML = `
-            <td>${m.rowid}</td>
-            <td>${m.nama}</td>
-            <td>${m.umur}</td>
-            <td>${m.fakultas}</td>
-            <td>${m.ipk}</td>
-            <td>${m.di_skors ? 'Ya' : 'Tidak'}</td>
+            <td>${m.rowid || m.id || m.Row_ID || 'N/A'}</td>
+            <td>${m.nama || m.name || m.Nama || 'N/A'}</td>
+            <td>${m.umur || m.age || m.Umur || 'N/A'}</td>
+            <td>${m.fakultas || m.faculty || m.Fakultas || 'N/A'}</td>
+            <td>${m.ipk || m.gpa || m.IPK || 'N/A'}</td>
+            <td>${m.di_skors || m.diskors || m.suspended ? 'Ya' : 'Tidak'}</td>
           `;
           tbody.appendChild(row);
         });
@@ -284,9 +284,17 @@
       status.innerText = 'Searching...';
       
       try {
-        // You'll need to create this endpoint in your backend
-        const response = await fetch(`http://localhost:8000/search?type=${searchType}&term=${searchTerm}`);
+        // Properly encode the URL parameters
+        const params = new URLSearchParams({
+          type: searchType,
+          term: searchTerm
+        });
+        const response = await fetch(`http://localhost:8000/search?${params}`);
         const data = await response.json();
+        
+        // Debug: log what we actually received
+        console.log('Search response:', data);
+        console.log('First item:', data[0]);
         
         tbody.innerHTML = '';
         

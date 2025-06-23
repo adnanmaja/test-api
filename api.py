@@ -54,24 +54,7 @@ def get_db():
 async def get_all_users(db: Session = Depends(get_db)):
     result = db.query(Mahasiswa).all()
     if result:
-        return result    
-    else: 
-        raise HTTPException(status_code=404, detail="Gak ada")
-
-@app.get("/search/nama/{nama}")
-def get_nama(nama: str, db: Session = Depends(get_db)):
-    result = db.query(Mahasiswa).filter(Mahasiswa.nama == nama).all()   
-    if result:
-        return result    
-    else: 
-        raise HTTPException(status_code=404, detail="Gak ada")
-
-@app.get("/search/fakultas/{fakultas}")
-def get_nama(fakultas: str, db: Session = Depends(get_db)):
-    print(f"Searching for fakultas: '{fakultas}'")
-    result = db.query(Mahasiswa).filter(Mahasiswa.fakultas == fakultas).all()   
-    if result:
-        return result    
+        return result  
     else: 
         raise HTTPException(status_code=404, detail="Gak ada")
 
